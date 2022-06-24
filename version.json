@@ -1,0 +1,10 @@
+{
+    "name" : "soundprism",
+    "version" : "1.0",
+    "author" : "B0-B",
+    "author_email" : "alch3mist94@protonmail.com",
+    "description" : "Sustaining signal & SFX generation and processing library with focus on VST instruments, music composition and sound design.",
+    "url" : "",
+    "licence" : "GNU",
+    "dependencies" : "sounddevice;numpy;matplotlib;pynput"
+}
