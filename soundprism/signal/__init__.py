@@ -85,12 +85,10 @@ class scale:
 
 class generator:
 
-    def clock (frequency, t, t0=0, width=0.1):
+    def clock (frequency, t, t0=0, pulseWidth=0.1):
+        if t0 < 0: ValueError('t0 must be positive!')
         T = 1/frequency
-        phase = t + (T-t%T)
-        if phase > width:
-            return 0
-        return 1
+        return (1 - np.sign(generator.saw(frequency, t) / pulseWidth - 1)) / 2
 
     def custom (frequency, timeline, generator1, generator2=None, frequencyMultiplier=1, crossFade=0.5, amplitudeScale=1.0):
         
@@ -237,7 +235,7 @@ def extrapolate (signal, t):
     
     return signal
 
-def plot (signal, start=None, stop=None, savepath=None, label='Signal', show=False, color='#ffd900',  facecolor='black', edgecolor='white'):
+def plot (signal, start=None, stop=None, savepath=None, label='Signal', show=True, color='#ffd900',  facecolor='black', edgecolor='white'):
 
     timeline = time.lineFromSignal(signal)
     
@@ -275,3 +273,7 @@ def square (signal):
     '''
 
     return combine(signal, signal, mode='multiply')
+
+
+sig = generator.clock(50, time.line(2), 0, 0.1)
+plot(sig)
