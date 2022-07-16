@@ -9,6 +9,7 @@ from argparse import ArgumentError
 import numpy as np
 from time import sleep
 import sounddevice as sd
+from pathlib import Path
 
 
 class units:
@@ -93,21 +94,9 @@ class generator:
         
         return amplitudeScale * f(frequency, timeline)
     
-    def extrapolate (signal, t):
+    def parabola (frequency, t, periodStart=0, periodEnd=1):
 
-        # draw period
-        T = signal.shape[0]
-        x = int( t / T )
-        y = T - x
-
-        # extrapolate the signal
-        if x > 0:
-            for i in range(x):
-                signal = np.concatenate(signal, signal)
-        if y > 0:
-            signal = np.concatenate(signal, signal)
-        
-        return signal
+        return ( ( ( t * frequency % 1 ) * ( periodEnd - periodStart ) - periodStart )  ) ** 2.
 
     def saw (frequency, t):
         
@@ -127,9 +116,9 @@ class generator:
 
 class sound:
             
-    def play (signal):
+    def play (signal, blocking=False):
 
-        sd.play(np.array(signal), time.sampleRate)
+        sd.play(np.array(signal), time.sampleRate, blocking=blocking)
 
     def setDevice (id):
 
@@ -225,25 +214,52 @@ def equal (signal_1, signal_2):
 
     return np.array_equal(signal_1, signal_2)
 
-def plot (signal, start=None, stop=None, savepath=None):
+def extrapolate (signal, t):
+
+    # draw period
+    T = signal.shape[0]
+    x = int( t / T )
+    y = T - x
+
+    # extrapolate the signal
+    if x > 0:
+        for i in range(x):
+            signal = np.concatenate(signal, signal)
+    if y > 0:
+        signal = np.concatenate(signal, signal)
+    
+    return signal
+
+def plot (signal, start=None, stop=None, savepath=None, label='Signal', show=False, color='#ffd900',  facecolor='black', edgecolor='white'):
 
     timeline = time.lineFromSignal(signal)
+    
+    # cut to range
+    if start and stop:
+        timeline = timeline[int(start*time.sampleRate):int(stop*time.sampleRate)]
+        signal = signal[int(start*time.sampleRate):int(stop*time.sampleRate)]
 
+    # build the figure
+    dt = np.round(10**6/time.sampleRate,2)
+    fig = plt.figure(dpi=150, facecolor=facecolor, edgecolor=edgecolor)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.plot(timeline, signal, color=color, label=label)
+    ax.set_facecolor(facecolor)
+    ax.set_xlabel(f'time in s in interval {dt}μs')
+    ax.yaxis.tick_right()
+    ax.spines['right'].set_color(edgecolor)
+    ax.xaxis.label.set_color(color)
+    ax.tick_params(axis='x', colors=edgecolor)
+    ax.tick_params(axis='y', colors=edgecolor)
+    plt.legend(facecolor='#383838', edgecolor=edgecolor, labelcolor='linecolor' )
+    
+    if savepath:
+        fig.savefig(Path(savepath))
+    
+    if show:
+        plt.show()
 
-    # fig = plt.figure(dpi=150, facecolor='black', edgecolor='white')
-    # ax = fig.add_subplot(1, 1, 1)
-    # ax.plot(signal, prediction, color='#ffd900', label='Commodore AI forecast 3h')
-    # ax.plot(x_array[-636:-36], mainInput, color='#03c2fc', label=Pair.upper())
-    # ax.set_facecolor('black')
-    # ax.set_xticks([])
-    # ax.set_xlabel('Past 48 hours.')
-    # ax.yaxis.tick_right()
-    # ax.spines['right'].set_color('white')
-    # ax.xaxis.label.set_color('white')
-    # ax.tick_params(axis='y', colors='white')
-    # plt.legend(facecolor='#383838', edgecolor='#ddd', labelcolor='linecolor')
-    # fig.savefig(main.root+f'/cache/{hash}.png')
-    # plt.close(fig)
+    plt.close(fig)
 
 def square (signal):
 

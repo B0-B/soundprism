@@ -125,7 +125,7 @@ class keyBoard ():
             print(e)
             return False
         
-    def synth (self, *tones, strength=0.5, volume=None, duration=None, playSound=True):
+    def synth (self, *tones, strength=0.5, volume=None, duration=None, playSound=True, blocking=True):
 
         if volume is not None:
             self.volume = volume
@@ -146,6 +146,6 @@ class keyBoard ():
             signal = signal[:int(duration * time.sampleRate)]
 
         if playSound:
-            sound.play(signal)
+            sound.play(signal, blocking=blocking)
 
         return signal
