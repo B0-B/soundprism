@@ -85,6 +85,13 @@ class scale:
 
 class generator:
 
+    def clock (frequency, t, t0=0, width=0.1):
+        T = 1/frequency
+        phase = t + (T-t%T)
+        if phase > width:
+            return 0
+        return 1
+
     def custom (frequency, timeline, generator1, generator2=None, frequencyMultiplier=1, crossFade=0.5, amplitudeScale=1.0):
         
         if generator2:
